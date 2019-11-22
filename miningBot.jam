@@ -1,0 +1,778 @@
+GOALS:
+	//start exploring
+	ACHIEVE explore; 
+	
+	
+FACTS:
+	//starting location
+	FACT position 0 0;
+	
+	//exit position
+	FACT exit 7 6;
+	
+	//rocks list
+	FACT rock 6 6 0;
+	FACT rock 5 4 4;
+	FACT rock 4 2 1;
+	FACT rock 3 1 5;
+	FACT rock 2 1 2;
+	FACT rock 1 0 3;
+	
+	//golds list
+	FACT gold 1 4 2;
+	FACT gold 3 5 5;
+	FACT gold 2 4 6;
+	FACT gold 4 7 3;
+	FACT goldFound 0;
+	
+	FACT current 0;
+	
+////////////////////////////////////
+//		    	EXPLORE ROOM	    	  //
+////////////////////////////////////
+PLAN: {
+	NAME: "Explore room"
+	GOAL:
+		ACHIEVE explore; 
+	BODY:
+	
+	
+		RETRIEVE position $x $y;
+		RETRIEVE current $cur;
+		RETRIEVE goldFound $f;
+	
+		EXECUTE println "Starting position: " $x " " $y;
+		EXECUTE println "Gold count: " $f;
+		EXECUTE println "Mining starts now...";
+
+		
+		WHILE: TEST (&& (<= $x 7) (!= $f 4))
+		{
+			RETRIEVE goldFound $f;
+			
+			
+			WHILE: TEST (&& (< $y 6)(!= $f 4))
+			{
+			
+				RETRIEVE position $x $y;
+				RETRIEVE current $cur;
+				
+				EXECUTE println "";
+				EXECUTE println "";
+				EXECUTE println "";
+				EXECUTE println "*************************************";
+				
+				EXECUTE println "Checking column: " $cur;
+				EXECUTE println "POSITION: " $x " " $y;
+				
+				//checks if up is blocked
+				PERFORM checkUp;
+				
+				
+				//go up
+				RETRIEVE position $x $y;
+				ASSIGN $y (+ $y 1);
+				ASSERT position $x $y;
+				
+				EXECUTE println "Going up to " $x " " $y "...";
+				
+				
+				
+				//check if robot at CURRENT column
+				RETRIEVE current $cur;
+				RETRIEVE goldFound $f;
+				
+				
+				WHILE: TEST (&& (!= $x $cur)(!= $f 4))
+				{
+					EXECUTE println "";
+					EXECUTE println "Going back to current checking column...";
+					PERFORM checkLeftUpward;
+					
+					RETRIEVE position $x $y;
+					ASSIGN $x (- $x 1);
+					ASSERT position $x $y;
+					RETRIEVE position $x $y;
+					
+					EXECUTE println "Going left to " $x " " $y "...";
+					
+					EXECUTE println "";	
+					EXECUTE println "-------------------------------------";
+					EXECUTE println "Checking gold...";
+					PERFORM checkGOLD;
+					EXECUTE println "-------------------------------------";
+					
+				};
+				
+			};
+			
+			RETRIEVE goldFound $f;
+			WHEN : TEST (!= $f 4)
+			{
+			
+				PERFORM checkRight;
+				
+				RETRIEVE position $x $y;
+				
+				EXECUTE println "POSITION: " $x " " $y;
+				
+				ASSIGN $x (+ $x 1);
+				ASSERT position $x $y;
+				
+				EXECUTE println "Going right to " $x " " $y "...";
+				
+				RETRIEVE position $x $y;
+				ASSIGN $cur $x;
+				ASSERT current $cur;
+				
+				
+				EXECUTE println "";
+				EXECUTE println "";
+				EXECUTE println "";
+				EXECUTE println "*************************************";
+				EXECUTE println "Checking column: " $cur;
+				EXECUTE println "POSITION: " $x " " $y;
+				
+				EXECUTE println "";	
+				EXECUTE println "-------------------------------------";
+				EXECUTE println "Checking gold...";
+				PERFORM checkGOLD;
+				EXECUTE println "-------------------------------------";
+			};
+			
+			
+
+			RETRIEVE goldFound $f;
+			WHILE: TEST (&& (> $y 0) (!= $f 4))
+			{
+				RETRIEVE position $x $y;
+				RETRIEVE current $cur;
+				
+				
+				EXECUTE println "";
+				EXECUTE println "";
+				EXECUTE println "";
+				EXECUTE println "*************************************";
+				
+				EXECUTE println "Checking column: " $cur;
+				EXECUTE println "POSITION: " $x " " $y;
+				
+				
+				//check if down is blocked
+				PERFORM checkDown;
+				
+				//go down
+				RETRIEVE position $x $y;	
+				ASSIGN $y (- $y 1);
+				ASSERT position $x $y;
+				
+				EXECUTE println "Going down to " $x " " $y "...";
+				
+				EXECUTE println "";	
+				EXECUTE println "-------------------------------------";
+				EXECUTE println "Checking gold...";
+				PERFORM checkGOLD;
+				EXECUTE println "-------------------------------------";
+				
+				//check if its in column
+				RETRIEVE position $x $y;
+				RETRIEVE current $cur;
+				RETRIEVE goldFound $f;
+				
+				
+				WHILE: TEST (&& (!= $cur $x) (!= $f 4))
+				{
+					EXECUTE println "";
+					EXECUTE println "Going back to current checking column...";
+					
+					PERFORM checkLeftDownward;
+					
+					RETRIEVE position $x $y;
+					ASSIGN $x (- $x 1);
+					ASSERT position $x $y;
+					
+					RETRIEVE position $x $y;
+					EXECUTE println "Going left to " $x " " $y "...";
+					
+					EXECUTE println "";	
+					EXECUTE println "-------------------------------------";
+					EXECUTE println "Checking gold...";
+					PERFORM checkGOLD;				
+					EXECUTE println "-------------------------------------";
+				};
+						
+			};
+			
+			RETRIEVE goldFound $f;
+			WHEN : TEST (!= $f 4)
+			{
+				PERFORM checkRight;
+				
+				RETRIEVE position $x $y;
+				
+				EXECUTE println "POSITION: " $x " " $y;
+
+				ASSIGN $x (+ $x 1);
+				ASSERT position $x $y;
+				
+				UPDATE (position) (position $x $y);
+				
+				EXECUTE println "Going right to " $x " " $y "...";
+				ASSIGN $cur $x;
+				ASSERT current $cur;
+				
+				
+				EXECUTE println "";
+				EXECUTE println "";
+				EXECUTE println "";
+				EXECUTE println "*************************************";
+				EXECUTE println "Checking column: " $cur;
+				EXECUTE println "POSITION: " $x " " $y;
+					
+				EXECUTE println "";	
+				WHEN : TEST (<= $x 7)
+				{
+					EXECUTE println "-------------------------------------";
+					EXECUTE println "Checking gold...";
+					PERFORM checkGOLD;
+					EXECUTE println "-------------------------------------";
+				};
+			
+			};
+			
+		};
+	
+}
+
+////////////////////////////////////
+//	    	 CHECK OBSTABCLES		    //
+////////////////////////////////////
+PLAN: {
+	NAME: "Check Up"
+	GOAL: PERFORM checkUp;
+	BODY:
+		
+		
+		DO
+		{
+			RETRIEVEALL $r rock $rock $a $b;
+			RETRIEVE position $x $y;
+			EXECUTE println "";
+			EXECUTE println "checking up at " $x " " $y "...";
+			
+			//count
+			ASSIGN $c 0;
+			ASSIGN $up_y (+ $y 1);
+			ASSIGN $right_x (+ $x 1);
+			
+			ASSIGN $upBlocked 0;
+			ASSIGN $rightBlocked 0;
+			
+			ASSIGN $LOOP 0;
+			
+			WHILE: TEST (< $c 6)
+			{
+				NEXTFACT $r rock $rock $a $b;
+				
+				WHEN: TEST (== $up_y $b)
+				{
+					WHEN: TEST (== $x $a)
+					{
+						EXECUTE println "up is blocked at: " $a " " $b ;
+						
+						//up is blocked
+						ASSIGN $upBlocked 1;
+
+					};
+				};
+				
+				WHEN: TEST (== $right_x $a)
+				{
+					WHEN: TEST (== $y $b)
+					{
+						EXECUTE println "right is blocked: " $a " " $b ;
+						//right is blocked
+						ASSIGN $rightBlocked 1;
+					};
+				};
+				
+				ASSIGN $c (+ $c 1); 
+				
+			};
+			
+			WHEN: TEST (== $upBlocked 1)
+			{
+				WHEN: TEST (== $rightBlocked 1)
+				{
+					ASSIGN $LOOP 1;
+					//go Down
+					
+					
+					ASSIGN $y (- $y 1);
+					EXECUTE println "Going down to " $x " " $y "...";
+					
+					
+					
+				};
+				
+				//go right
+				ASSIGN $x (+ $x 1);
+				EXECUTE println "Going right " $x " " $y "...";
+				
+			};
+			
+				
+			//UPDATE (position) (position $x $y);
+			ASSERT position $x $y;
+			RETRIEVE position $x $y;
+			EXECUTE println "updated position: " $x " " $y;
+			
+			EXECUTE println "";	
+			EXECUTE println "-------------------------------------";
+			EXECUTE println "checking gold...";
+			PERFORM checkGOLD;
+			EXECUTE println "-------------------------------------";
+			
+			EXECUTE println "";
+		} WHILE: TEST (== $LOOP 1);
+				
+}
+
+PLAN: {
+	NAME: "Check Down"
+	GOAL: ACHIEVE checkDown;
+	BODY:
+		
+		DO
+		{
+			RETRIEVEALL $r rock $rock $a $b;
+			RETRIEVE position $x $y;
+			EXECUTE println "";
+			EXECUTE println "checking down at: " $x " " $y;
+			
+			//count
+			ASSIGN $c 0;
+			ASSIGN $down_y (- $y 1);
+			ASSIGN $right_x (+ $x 1);
+			
+			ASSIGN $downBlocked 0;
+			ASSIGN $rightBlocked 0;
+			
+			ASSIGN $LOOP 0;
+			
+			//Loop through 6 rocks
+			WHILE: TEST (< $c 6)
+			{
+				NEXTFACT $r rock $rock $a $b;
+				
+				WHEN: TEST (== $down_y $b)
+				{
+					WHEN: TEST (== $x $a)
+					{
+						EXECUTE println "down is blocked at: " $a " " $b ;
+						//up is blocked
+						ASSIGN $downBlocked 1;
+
+					};
+				};
+				
+				WHEN: TEST (== $right_x $a)
+				{
+					WHEN: TEST (== $y $b)
+					{
+						EXECUTE println "right is blocked at: " $a " " $b ;
+						//right is blocked
+						ASSIGN $rightBlocked 1;
+					};
+				};
+		
+				ASSIGN $c (+ $c 1); 
+			};
+			
+			
+			WHEN: TEST (== $downBlocked 1)
+			{
+				WHEN: TEST (== $rightBlocked 1)
+				{
+					ASSIGN $LOOP 1;
+					//go up
+					
+					ASSIGN $y (+ $y 1);
+					EXECUTE println "Going up to " $x " " $y "..."; 
+					
+					
+				};
+				
+				//go right
+				ASSIGN $x (+ $x 1);
+				EXECUTE println "Going right to " $x " " $y "...";
+				
+			};
+			
+			UPDATE (position) (position $x $y);
+			RETRIEVE position $x $y;
+			EXECUTE println "update position: " $x " " $y;
+
+			EXECUTE println "";	
+			EXECUTE println "-------------------------------------";
+			EXECUTE println "checking gold...";
+			PERFORM checkGOLD;
+			EXECUTE println "-------------------------------------";
+			
+			EXECUTE println "";
+		} WHILE: TEST (== $LOOP 1);
+				
+}
+
+PLAN: {
+	NAME: "Check Right"
+	GOAL: ACHIEVE checkRight;
+	BODY:
+		DO
+		{
+			RETRIEVEALL $r rock $rock $a $b;
+			RETRIEVE position $x $y;
+			EXECUTE println "";
+			EXECUTE println "checking right at: " $x " " $y;
+			
+			//count
+			ASSIGN $c 0;
+			ASSIGN $right_x (+ $x 1);
+			ASSIGN $up_y (+ $y 1);
+			
+			ASSIGN $rightBlocked 0;
+			ASSIGN $upBlocked 0;
+			
+			ASSIGN $LOOP 0;
+			
+			//Loop through 6 rocks
+			WHILE: TEST (< $c 6)
+			{
+				NEXTFACT $r rock $rock $a $b;
+				
+				//check if right is blocked
+				WHEN: TEST (== $right_x $a)
+				{
+					WHEN: TEST (== $y $b)
+					{
+					
+						EXECUTE println "right is blocked at: " $a " " $b ;
+						//right is blocked
+						ASSIGN $rightBlocked 1;
+
+					};
+				};
+				
+				//check if up is blocked
+				WHEN: TEST (== $up_y $b)
+				{
+					WHEN: TEST (== $x $a)
+					{
+						EXECUTE println "up is blocked at: " $a " " $b ;
+						//up is blocked
+						ASSIGN $upBlocked 1;
+					};
+				};
+		
+				ASSIGN $c (+ $c 1); 
+			};
+			
+			
+			WHEN: TEST (== $rightBlocked 1)
+			{
+				WHEN: TEST (== $upBlocked 1)
+				{
+					ASSIGN $LOOP 1;
+					//go Left
+					ASSIGN $x (- $x 1);
+					
+					EXECUTE println "Going left to " $x " " $y "...";
+					
+					
+				};
+				
+				//go Up
+				ASSIGN $y (+ $y 1);
+				
+				EXECUTE println "Going up to " $x " " $y "...";
+			};
+			
+			ASSERT position $x $y;
+			RETRIEVE position $x $y;
+			EXECUTE println "update position: " $x " " $y;
+			
+			EXECUTE println "";	
+			EXECUTE println "-------------------------------------";
+			EXECUTE println "checking gold...";
+			PERFORM checkGOLD;
+			EXECUTE println "-------------------------------------";
+			
+			EXECUTE println "";
+		} WHILE: TEST (== $LOOP 1);
+	
+}
+
+
+PLAN: {
+	NAME: "Check Left Upwards"
+	GOAL: ACHIEVE checkLeftUpward;
+	BODY:
+		
+		DO
+		{
+			RETRIEVEALL $r rock $rock $a $b;
+			RETRIEVE position $x $y;
+			EXECUTE println "";
+			EXECUTE println "checking left at: " $x " " $y;
+			
+			//count
+			ASSIGN $c 0;
+			ASSIGN $left_x (- $x 1);
+			ASSIGN $up_y (+ $y 1);
+			
+			ASSIGN $leftBlocked 0;
+			ASSIGN $upBlocked 0;
+			
+			ASSIGN $LOOP 0;
+			
+			//Loop through 6 rocks
+			WHILE: TEST (< $c 6)
+			{
+				NEXTFACT $r rock $rock $a $b;
+				
+				//check if left is blocked
+				WHEN: TEST (== $left_x $a)
+				{
+					WHEN: TEST (== $y $b)
+					{
+					
+						EXECUTE println "left is blocked at: " $a " " $b ;
+						//left is blocked
+						ASSIGN $leftBlocked 1;
+
+					};
+				};
+				
+				//check if up is blocked
+				WHEN: TEST (== $up_y $b)
+				{
+					WHEN: TEST (== $x $a)
+					{
+					
+						EXECUTE println "up is blocked at: " $a " " $b ;
+						//up is blocked
+						ASSIGN $upBlocked 1;
+					};
+				};
+		
+				ASSIGN $c (+ $c 1); 
+			};
+			
+			
+			WHEN: TEST (== $leftBlocked 1)
+			{
+				WHEN: TEST (== $upBlocked 1)
+				{
+					ASSIGN $LOOP 1;
+					
+					//go Right
+					ASSIGN $x (+ $x 1);
+					EXECUTE println "Going right to " $x " " $y "...";
+					
+				};
+				
+				//go Up
+				ASSIGN $y (+ $y 1);
+				EXECUTE println "Going up to " $x " " $y "...";
+				
+			};
+			ASSERT position $x $y;
+			RETRIEVE position $x $y;
+			EXECUTE println "update position: " $x " " $y;
+			
+			EXECUTE println "";	
+			EXECUTE println "-------------------------------------";
+			EXECUTE println "checking gold...";
+			PERFORM checkGOLD;
+			EXECUTE println "-------------------------------------";
+			
+			EXECUTE println "";
+			
+			
+			
+		} WHILE: TEST (== $LOOP 1);
+}
+
+PLAN: {
+	NAME: "Check Left Downward"
+	GOAL: ACHIEVE checkLeftDownward;
+	BODY:
+		DO
+		{
+			RETRIEVEALL $r rock $rock $a $b;
+			RETRIEVE position $x $y;
+			EXECUTE println "";
+			EXECUTE println "checking left at: " $x " " $y;
+			
+			//count
+			ASSIGN $c 0;
+			ASSIGN $left_x (- $x 1);
+			ASSIGN $down_y (- $y 1);
+			
+			ASSIGN $leftBlocked 0;
+			ASSIGN $downBlocked 0;
+			
+			ASSIGN $LOOP 0;
+			
+			//Loop through 6 rocks
+			WHILE: TEST (< $c 6)
+			{
+				NEXTFACT $r rock $rock $a $b;
+				
+				//check if left is blocked
+				WHEN: TEST (== $left_x $a)
+				{
+					WHEN: TEST (== $y $b)
+					{
+						EXECUTE println "left is blocked at: " $a " " $b ;
+						//left is blocked
+						ASSIGN $leftBlocked 1;
+
+					};
+				};
+				
+				//check if down is blocked
+				WHEN: TEST (== $down_y $b)
+				{
+					WHEN: TEST (== $x $a)
+					{
+						EXECUTE println "down is blocked at: " $a " " $b ;
+						//down is blocked
+						ASSIGN $downBlocked 1;
+					};
+				};
+		
+				ASSIGN $c (+ $c 1); 
+			};
+						
+			WHEN: TEST (== $leftBlocked 1)
+			{
+				WHEN: TEST (== $downBlocked 1)
+				{
+					ASSIGN $LOOP 1;
+					//go Right
+					ASSIGN $x (+ $x 1);
+					EXECUTE println "Going right to " $x " " $y "...";		
+
+				};
+				
+				//go Down
+				ASSIGN $y (- $y 1);
+				EXECUTE println "Going down to " $x " " $y "...";
+				
+			};	
+			ASSERT position $x $y;	
+			RETRIEVE position $x $y;
+			EXECUTE println "update position: " $x " " $y;	
+
+			EXECUTE println "";
+			EXECUTE println "-------------------------------------";
+			EXECUTE println "checking gold...";
+			PERFORM checkGOLD;
+			EXECUTE println "-------------------------------------";
+			
+			EXECUTE println "";		
+		} WHILE: TEST (== $LOOP 1);
+}
+
+////////////////////////////////////
+//   		    CHECK GOLD    		    //
+////////////////////////////////////
+
+PLAN: {
+	NAME: "Check GOLD"
+	GOAL: ACHIEVE checkGOLD;
+	BODY:
+		RETRIEVEALL $g gold $gold $a $b;
+		RETRIEVE position $x $y;
+		
+		
+		
+		ASSIGN $c 0;
+		
+		WHILE: TEST(< $c 4)
+		{
+			NEXTFACT $g gold $gold $a $b;
+			
+			//EXECUTE println "Gold " $gold ": " $a " " $b ;
+			WHEN: TEST (== $x $a )
+			{
+				WHEN: TEST (== $y $b)
+				{
+					EXECUTE println "Gold " $gold ": " $a " " $b " found!";
+					
+					RETRIEVE goldFound $f;
+					ASSIGN $f (+ $f 1);
+					EXECUTE println "Gold count: " $f;
+					ASSERT goldFound $f;
+					ASSERT gold $gold 0 0;
+					//RETRACT gold $g;
+				};
+			};
+			ASSIGN $c (+ $c 1);
+		};
+		RETRIEVE goldFound $f;
+		WHEN: TEST(== $f 4)
+		{
+			EXECUTE println "";
+			EXECUTE println "";
+			EXECUTE println "/////////////////////////////////////////////////";
+			EXECUTE println "All golds are found!";
+			ACHIEVE goToExit;
+			EXECUTE println "/////////////////////////////////////////////////";
+			EXECUTE println "";
+		};
+		
+}
+
+PLAN: {
+	NAME: "Go to EXIT"
+	GOAL: ACHIEVE goToExit;
+	BODY:
+	
+		
+		EXECUTE println "exiting...";
+		RETRIEVE position $x $y;
+		
+		EXECUTE println "Exiting start position: " $x " " $y;
+		WHILE: TEST (!= $x 7)
+		{
+			//PERFORM checkRight;
+			ASSIGN $x (+ $x 1);
+			UPDATE (position) (position $x $y);
+			EXECUTE println "Going right to " $x " " $y "...";
+		};
+		
+		RETRIEVE position $x $y;
+		
+		WHILE: TEST (!= $y 6)
+		{
+			
+			//PERFORM checkUP;
+			ASSIGN $y (+ $y 1);
+			UPDATE (position) (position $x $y);
+			EXECUTE println "Going up to " $x " " $y "...";
+		
+		};
+		
+		//UPDATE (current) (current $x);
+		
+		EXECUTE println "EXIED AT: " $x " " $y;
+		EXECUTE println "ALL GOLDS FOUND, GOAL COMPLETE!";
+		
+		ASSERT current $x;
+		
+
+}
+
+
